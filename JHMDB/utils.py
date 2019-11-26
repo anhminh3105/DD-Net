@@ -3,8 +3,9 @@ import os
 import pandas as pd
 import random
 import scipy.ndimage.interpolation as inter
+from scipy.spatial.distance import cdist
 from scipy.signal import medfilt 
-
+import matplotlib.pyplot as plt
 ###################################################################################
     
     
@@ -16,6 +17,7 @@ def zoom(p,target_l=64,joints_num=25,joints_dim=3):
         for n in range(joints_dim):
             p_new[:,m,n] = medfilt(p_new[:,m,n],3)
             p_new[:,m,n] = inter.zoom(p[:,m,n],target_l/l)[:target_l]         
+            
     return p_new
 
 def sampling_frame(p,C):
@@ -32,10 +34,15 @@ def sampling_frame(p,C):
     p = zoom(p,C.frame_l,C.joint_n,C.joint_d)
     return p
 
-def norm_scale(x):
-    return (x-np.mean(x))/np.mean(x)
+def norm_scale(x, divider_type='mean'):
+    mean = np.mean(x)
+    if divider_type == 'mean':
+        divider = mean
+    else:
+        divider = np.var(x)
+        
+    return (x-mean)/divider
 
-from scipy.spatial.distance import cdist
 def get_CG(p,C):
     M = []
     iu = np.triu_indices(C.joint_n,1,C.joint_n)
